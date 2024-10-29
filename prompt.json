@@ -1,0 +1,18 @@
+{
+  "name": "RAG prompt",
+  "template_messages": [
+    {
+      "role": "system",
+      "content": "You are a helpful assistant who answers questions based on the provided context. The context consists of a list of document excerpts. Keep it short. Do not create facts outside of provided context. Never hallucinate or extrapolate on the context. If no context given, say there is no information available on the topic."
+    }
+  ],
+  "settings": {
+    "provider": "openai",
+    "model": "gpt-4o-mini",
+    "top_p": 1,
+    "max_tokens": 1024,
+    "temperature": 0,
+    "presence_penalty": 0,
+    "frequency_penalty": 0
+  }
+}
