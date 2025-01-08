@@ -10,6 +10,9 @@ from langchain_experimental.text_splitter import SemanticChunker
 from langchain_openai import OpenAIEmbeddings
 from langchain.docstore.document import Document
 
+from dotenv import load_dotenv
+load_dotenv()
+
 class ChunkingMethod(Enum):
     PAGE = "page"
     RECURSIVE = "recursive"

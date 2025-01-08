@@ -88,9 +88,13 @@ def run_experiment_item(experiment, item):
 
 
 ds = literalai_client.api.get_dataset(name="Testset")
-print(f"Found {len(ds.items)} rows in dataset {ds.name} !") # type: ignore
 
-experiment = ds.create_experiment(name="Top k = 10") # type: ignore
+if ds is None:
+    print("Dataset not found or API call failed.")
+else:
+    print(f"Found {len(ds.items)} rows in dataset {ds.name}!") # type: ignore
 
-for item in ds.items: # type: ignore
-    run_experiment_item(experiment, item)
+    experiment = ds.create_experiment(name="Top k = 10") # type: ignore
+
+    for item in ds.items: # type: ignore
+        run_experiment_item(experiment, item)
