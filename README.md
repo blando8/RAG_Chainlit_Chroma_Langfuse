@@ -1,15 +1,65 @@
-# RAG using Chainlit - Chroma - Literal AI (demo @Datacraft)
+# RAG using Chainlit - Chroma - Langfuse
 
 This repo shows how to evaluate a RAG:
 
-- pip install chainlit literalai
-- put your PDF files in the `docs` folder
-- `cp .env.example .env` and set your OpenAI and Literal AI API keys
-- `python embed.py` to chunk the PDF files and store them in the `chunks` folder
-- `chainlit run demo.py` to start a chat
-- create a dataset of questions and answers from your interactions
-- `python run_experiment.py` to evaluate the performance of the RAG chatbot
-- visualize the results from Literal AI
+1. Set up virtual env to run code in (and install dependencies)
 
-The `docs.tar.gz` file has size > 100 MB, use git lfs to pull. 
-Then `tar -zxvf docs.tar.gz` to chunk these docs (public files about sustainability).
+    - For Mac & Unix
+    ```shell
+    python -m venv .venv && source .venv/bin/activate
+    pip install -r requirements.txt
+    ```
+    
+    - For Window
+    ```shell
+    python -m venv .venv && .\.venv\Scripts\activate
+    pip install -r requirements.txt
+    ```
+    
+2. Downloads arXiv PDFs and store them in the `docs` folder
+
+    ```shell
+    python download_pdf.py
+    ```
+3. Configure OpenAI and Langfuse by setting environment variables. Create a `.env` file and populate it with your OpenAI and Langfuse details (see `.env.example` for an example).
+
+4. Chunk the PDF files and store them in the `chunks` folder
+
+    ```shell
+    python embed.py
+    ```
+    
+5. Start a chat
+
+    ```shell
+    chainlit run demo.py
+    ```
+
+6. Create a dataset of questions and answers from your interactions
+    
+    - Launch the API endpoint
+    
+    ```shell
+    python test.py
+    ```
+    
+    - Create a `.csv` file that contains Questions/Answers/Context
+    
+    ```shell
+    python generator.py
+    ```
+    
+7. Eval: Create an eval dataset and run eval
+
+    - Create the eval dataset in Langfuse
+
+      ```shell
+      python create_dataset.py
+      ```
+
+    - Run eval
+
+      ```shell
+      python run_eval.py
+      ```
+8. Inspect all Traces,Datasets, and Dataset Runs in the Langfuse Dashboard (at `https://cloud.langfuse.com/`)

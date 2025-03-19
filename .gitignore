@@ -1,4 +1,23 @@
-.env
-.DS_Store
+# Ignore Python cache files
+__pycache__/
+*.pyc
+*.pyo
+
+# Jupyter Notebook
 .ipynb_checkpoints
-__pycache__
+
+# Ignore virtual environment
+myenv/
+
+# Ignore environment variables file
+.env
+
+# Ignore log files
+*.log
+
+# Ignore pdf files
+*.pdf
+
+# Ignore system files
+.DS_Store
+Thumbs.db

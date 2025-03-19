@@ -81,7 +81,7 @@ async def on_chat_start():
     Send a welcome message and set up the initial user session on chat start.
     """
     await cl.Message(
-        content="Bonjour, comment puis-je vous aider?",
+        content="Hello, How can I help you?",
     ).send()
     cl.user_session.set("settings", prompt.settings)
     cl.user_session.set("messages", prompt.format_messages())

@@ -47,8 +47,9 @@ def embed(documents, persist_directory):
     
     return vectorstore
 
+
 if __name__ == "__main__":
-    docs = chunk_pdf("./docs", ChunkingMethod.PAGE)
+    docs = chunk_pdf("./docs", ChunkingMethod.RECURSIVE)
     start_time = time.time()
     vector_store = embed(documents=docs, persist_directory=os.getenv("PERSIST_DIRECTORY"))
 

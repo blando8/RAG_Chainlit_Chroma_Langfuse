@@ -19,12 +19,13 @@ embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
 
 generator = TestsetGenerator(llm=generator_llm, embedding_model=embeddings)
 
+
 docs = chunk_pdf("./docs/", ChunkingMethod.RECURSIVE)
 print("Done chunking")
 
 testset = generator.generate_with_langchain_docs(docs, testset_size=10)
 test_df = testset.to_pandas()
 
-test_df.to_csv('testset_10.csv', index=False)
+test_df.to_csv('testset.csv', index=False)
 
 print(f"Processed in {time.time() - start_time:.2f} seconds.")
