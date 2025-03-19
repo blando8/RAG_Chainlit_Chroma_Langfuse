@@ -62,4 +62,4 @@ This repo shows how to evaluate a RAG:
       ```shell
       python run_eval.py
       ```
-8. Inspect all Traces,Datasets, and Dataset Runs in the Langfuse Dashboard (at `https://cloud.langfuse.com/`)
+8. Inspect all Traces,Datasets, and Dataset Runs in the Langfuse Dashboard (at `https://cloud.langfuse.com/`)# RAG_Chainlit_Chroma_Langfuse
