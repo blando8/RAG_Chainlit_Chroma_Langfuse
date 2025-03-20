@@ -139,7 +139,7 @@ def main():
     
     for test_sample in testset.items:
         
-        with test.observe(
+        with test_sample.observe(
         run_name=EXPERIMENT_NAME,
         #run_description="My 3nd run",
         ) as trace_id:
