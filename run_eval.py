@@ -9,22 +9,23 @@ import pandas as pd
 from datasets import Dataset
 from langfuse.decorators import observe, langfuse_context
 import getpass
+import argparse
 
 
 load_dotenv()
 # Initialize Langfuse client
-LANGFUSE_PUBLIC_KEY = os.getenv("LANGFUSE_PUBLIC_KEY")
-LANGFUSE_SECRET_KEY = os.getenv("LANGFUSE_SECRET_KEY")
-LANGFUSE_HOST = "LANGFUSE_HOST"  # Change if self-hosted
+#LANGFUSE_PUBLIC_KEY = os.getenv("LANGFUSE_PUBLIC_KEY")
+#LANGFUSE_SECRET_KEY = os.getenv("LANGFUSE_SECRET_KEY")
+#LANGFUSE_HOST = "LANGFUSE_HOST"  # Change if self-hosted
 
-langfuse_client = langfuse.Langfuse(
-    public_key=LANGFUSE_PUBLIC_KEY,
-    secret_key=LANGFUSE_SECRET_KEY,
-    host=LANGFUSE_HOST
-)
+#langfuse_client = langfuse.Langfuse(
+#    public_key=LANGFUSE_PUBLIC_KEY,
+#    secret_key=LANGFUSE_SECRET_KEY,
+#    host=LANGFUSE_HOST
+#)
 
-if not LANGFUSE_PUBLIC_KEY or not LANGFUSE_SECRET_KEY:
-    raise ValueError("Missing Langfuse API credentials. Please set LANGFUSE_PUBLIC_KEY and LANGFUSE_SECRET_KEY.")
+#if not LANGFUSE_PUBLIC_KEY or not LANGFUSE_SECRET_KEY:
+#    raise ValueError("Missing Langfuse API credentials. Please set LANGFUSE_PUBLIC_KEY and LANGFUSE_SECRET_KEY.")
 
 username = getpass.getuser()
 
@@ -102,7 +103,7 @@ def evaluate_llm_item(test, session_name):
     } for m in metrics],
     }
     
-        # Update langfuse trace details
+    # Update langfuse trace details
     langfuse_context.update_current_observation(
         input= question,
         output= answer,
@@ -127,11 +128,11 @@ def log_results(item_metrics, lf_trace_id):
             value=score["value"],
         )
 
-def main():
+def main(LF_DATASET_NAME, EXPERIMENT_NAME, SESSION_NAME):
     
-    LF_DATASET_NAME = "eval-dataset"
-    EXPERIMENT_NAME = "exp V1"
-    SESSION_NAME = "session 1"
+    #LF_DATASET_NAME = "eval-dataset"
+    #EXPERIMENT_NAME = "exp V1"
+    #SESSION_NAME = "session 1"
     
     langfuse = Langfuse()
     testset = fetch_testset(LF_DATASET_NAME)
@@ -152,4 +153,14 @@ def main():
     print("Evaluation completed and results logged.")
 
 if __name__ == "__main__":
-    main()
+    # Initialisation du parser
+    parser = argparse.ArgumentParser(description="Script avec arguments nommés")
+
+    # Ajouter des arguments avec clé=valeur
+    parser.add_argument("--LF_DATASET_NAME", type=str, help="Nom du testset sur Langfuse")
+    parser.add_argument("--EXPERIMENT_NAME", type=str, help="Nom de l'experimentation")
+    parser.add_argument("--SESSION_NAME", type=str, help="Nom de session")
+
+    # Parser les arguments
+    args = parser.parse_args()
+    main(args.LF_DATASET_NAME, args.EXPERIMENT_NAME, args.SESSION_NAME)
