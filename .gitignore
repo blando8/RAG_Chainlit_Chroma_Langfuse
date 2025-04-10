@@ -2,6 +2,7 @@
 __pycache__/
 *.pyc
 *.pyo
+test copy.py
 
 # Jupyter Notebook
 .ipynb_checkpoints
