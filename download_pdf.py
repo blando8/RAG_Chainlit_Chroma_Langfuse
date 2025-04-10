@@ -64,10 +64,10 @@ if __name__ == "__main__":
     """
 
     #Example: Download PDFs for "Gen AI" papers
-    key_word = "Gen AI" #Replace at your convenience
-    order_type = "-announced_date_first" #Replace at your convenience based of the option define above
+    key_word = "Large Language Model" #Replace at your convenience
+    order_type = "" #"-announced_date_first" #Replace at your convenience based of the option define above
 
-    arxiv_ids = get_arxiv_ids(key_word, order_type, max_papers=3)
+    arxiv_ids = get_arxiv_ids(key_word, order_type, max_papers=4)
     print(f"Found {len(arxiv_ids)} papers.")
 
     for arxiv_id in arxiv_ids:

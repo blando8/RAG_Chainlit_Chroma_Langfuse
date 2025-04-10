@@ -6,6 +6,7 @@ from literalai import LiteralClient
 from langchain_chroma import Chroma
 from typing import List, Dict, Any
 import chainlit as cl
+from langfuse.decorators import observe, langfuse_context
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -33,6 +34,8 @@ with open(prompt_path, "r") as f:
         settings=rag_prompt["settings"]
     )
 
+
+#@observe(as_type="generation")
 async def call_llm(question: str, chunks: List[Dict[str, Any]]):
     messages = cl.user_session.get("messages", [])
     
@@ -47,7 +50,52 @@ async def call_llm(question: str, chunks: List[Dict[str, Any]]):
             await answer_message.stream_token(token)
     
     await answer_message.update()
+    
     return answer_message.content
+
+
+@observe(as_type="generation")
+async def call_llmChatBot(question: str, chunks: List[Dict[str, Any]]):
+    messages = cl.user_session.get("messages", [])
+    
+    context = "\n".join([f"{doc['page_content']}" for doc in chunks])
+    messages.append({"role": "user", "content": f"Context: {context}\n\nQuestion: {question}\n\nAnswer:"})
+
+    response = await oai_client.chat.completions.create(model="gpt-4o-mini", messages=messages, stream=False)
+    
+    langfuse_context.update_current_observation(
+        usage_details = {
+        "input": response.usage.prompt_tokens,  # maps to "input_tokens"
+        "output": response.usage.completion_tokens,  # maps to "output_tokens"
+        "cache_read_input_tokens": response.usage.prompt_tokens_details.cached_tokens,
+        },
+        model="gpt-4o-mini"
+    )
+    # Pricing per 1M tokens (cf platform OpenAI)
+    input_cost_per_1M = 0.15
+    output_cost_per_1M = 0.60
+    cached_cost_per_1M = 0.075
+
+    cost_details={
+          "input": response.usage.prompt_tokens / 1000000 * input_cost_per_1M,
+          "cache_read_input_tokens": response.usage.prompt_tokens_details.cached_tokens / 1000000 * cached_cost_per_1M,
+          "output": response.usage.completion_tokens / 1000000 * output_cost_per_1M,
+      }
+    # Add total
+    cost_details["total"] = (
+    cost_details["input"]
+    + cost_details["output"]
+    + cost_details["cache_read_input_tokens"]
+    )
+
+    # Update Langfuse
+    langfuse_context.update_current_observation(
+        cost_details=cost_details,
+        model="gpt-4o-mini"
+    )
+    
+    return response.choices[0].message.content
+
 
 async def retrieve(question: str, top_k: int) -> List[Dict[str, Any]]:
     """
@@ -67,12 +115,17 @@ async def get_relevant_chunks(question: str, top_k: int = 5) -> List[Dict[str, A
     return await retrieve(question, top_k)
 
 @cl.step(type="run", name="RAG Agent")
-async def rag_agent(question: str) -> str:
+
+
+@observe
+async def rag_agentChatBot(question: str) -> str:
     """
     Coordinate the RAG agent flow to generate a response based on the user's question.
     """
     chunks = await get_relevant_chunks(question)
     answer = await call_llm(question, chunks)
+    ans = await call_llmChatBot(question, chunks)
+    
     return answer
 
 @cl.on_chat_start
@@ -94,5 +147,5 @@ async def main(message: cl.Message):
     messages = cl.user_session.get("messages", [])
     answer_message = cl.Message(content="")
     cl.user_session.set("answer_message", answer_message)
-    answer = await rag_agent(message.content)
+    answer = await rag_agentChatBot(message.content)
     cl.user_session.set("messages", messages + [{"role": "assistant", "content": answer}])

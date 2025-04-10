@@ -13,21 +13,9 @@ import argparse
 
 
 load_dotenv()
-# Initialize Langfuse client
-#LANGFUSE_PUBLIC_KEY = os.getenv("LANGFUSE_PUBLIC_KEY")
-#LANGFUSE_SECRET_KEY = os.getenv("LANGFUSE_SECRET_KEY")
-#LANGFUSE_HOST = "LANGFUSE_HOST"  # Change if self-hosted
-
-#langfuse_client = langfuse.Langfuse(
-#    public_key=LANGFUSE_PUBLIC_KEY,
-#    secret_key=LANGFUSE_SECRET_KEY,
-#    host=LANGFUSE_HOST
-#)
-
-#if not LANGFUSE_PUBLIC_KEY or not LANGFUSE_SECRET_KEY:
-#    raise ValueError("Missing Langfuse API credentials. Please set LANGFUSE_PUBLIC_KEY and LANGFUSE_SECRET_KEY.")
 
 username = getpass.getuser()
+
 
 @observe()
 def call_rag_api(question, api_url="http://localhost:8000/rag_agent"):
@@ -38,6 +26,7 @@ def call_rag_api(question, api_url="http://localhost:8000/rag_agent"):
     :param api_url: The URL of the API endpoint (default: "http://localhost:8000/rag_agent")
     :return: A tuple containing (answer, contexts)
     """
+    
     payload = {"question": question}
     #print(question)
 
@@ -49,6 +38,7 @@ def call_rag_api(question, api_url="http://localhost:8000/rag_agent"):
     except requests.exceptions.RequestException as e:
         print(f"An error occurred while calling the API: {e}")
         return None, None
+    
 
 def fetch_testset(testset_name):
     """Fetches test cases from Langfuse."""
@@ -58,20 +48,19 @@ def fetch_testset(testset_name):
     return testset
 
 @observe()
-def evaluate_llm_item(test, session_name):
+def evaluate_llm_item(test, session_name, tag):
     """Runs LLM evaluation using test cases."""
     
+    lf_trace_id = langfuse_context.get_current_trace_id()
     question = test.input
     expected_output = test.expected_output
     expected_chunk = test.metadata
-
+    
     answer, chunks = call_rag_api(question)
 
     if answer is None:
         #continue
         print("KKOO")
-    
-    lf_trace_id = langfuse_context.get_current_trace_id()
         
     data_samples = {
         'question': [question],
@@ -109,7 +98,7 @@ def evaluate_llm_item(test, session_name):
         output= answer,
         metadata=chunks,
         session_id=session_name,
-        #tags=["tag-1"],
+        tags=[tag],
         user_id=username,
     )
     
@@ -127,12 +116,9 @@ def log_results(item_metrics, lf_trace_id):
             name=score["name"],
             value=score["value"],
         )
-
-def main(LF_DATASET_NAME, EXPERIMENT_NAME, SESSION_NAME):
-    
-    #LF_DATASET_NAME = "eval-dataset"
-    #EXPERIMENT_NAME = "exp V1"
-    #SESSION_NAME = "session 1"
+        
+        
+def main(LF_DATASET_NAME, EXPERIMENT_NAME, SESSION_NAME, TAG):
     
     langfuse = Langfuse()
     testset = fetch_testset(LF_DATASET_NAME)
@@ -145,7 +131,7 @@ def main(LF_DATASET_NAME, EXPERIMENT_NAME, SESSION_NAME):
         #run_description="My 3nd run",
         ) as trace_id:
             
-            item_metrics, lf_trace_id = evaluate_llm_item(test_sample, SESSION_NAME)
+            item_metrics, lf_trace_id = evaluate_llm_item(test_sample, SESSION_NAME, TAG)
             log_results(item_metrics, lf_trace_id)
         
         langfuse.flush()
@@ -160,7 +146,8 @@ if __name__ == "__main__":
     parser.add_argument("--LF_DATASET_NAME", type=str, help="Nom du testset sur Langfuse")
     parser.add_argument("--EXPERIMENT_NAME", type=str, help="Nom de l'experimentation")
     parser.add_argument("--SESSION_NAME", type=str, help="Nom de session")
+    parser.add_argument("--TAG", type=str, help="Tag des traces generées")
 
     # Parser les arguments
     args = parser.parse_args()
-    main(args.LF_DATASET_NAME, args.EXPERIMENT_NAME, args.SESSION_NAME)
+    main(args.LF_DATASET_NAME, args.EXPERIMENT_NAME, args.SESSION_NAME, args.TAG)

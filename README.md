@@ -60,6 +60,6 @@ This repo shows how to evaluate a RAG:
     - Run eval
 
       ```shell
-      python run_eval.py --LF_DATASET_NAME="eval-dataset" --EXPERIMENT_NAME="exp V1" --SESSION_NAME="session 1"
+      python run_eval.py --LF_DATASET_NAME="eval-dataset" --EXPERIMENT_NAME="exp V1" --SESSION_NAME="session 1" --TAG="tag-1"
       ```
 8. Inspect all Traces,Datasets, and Dataset Runs in the Langfuse Dashboard (at `https://cloud.langfuse.com/`)
