@@ -31,25 +31,29 @@ vector_store = Chroma(
     persist_directory=os.getenv("PERSIST_DIRECTORY"),
 )
 
-literalai_client = LiteralClient(url=os.getenv("LITERAL_API_URL"), api_key=os.getenv("LITERAL_API_KEY"))
+#literalai_client = LiteralClient(url=os.getenv("LITERAL_API_URL"), api_key=os.getenv("LITERAL_API_KEY"))
 oai_client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-prompt_path = os.path.join(os.getcwd(), "prompt.json")
+#prompt_path = os.path.join(os.getcwd(), "prompt.json")
 
 # Load the RAG prompt
-with open(prompt_path, "r") as f:
-    rag_prompt = json.load(f)
+#with open(prompt_path, "r") as f:
+#    rag_prompt = json.load(f)
 
-    prompt = literalai_client.api.get_or_create_prompt(
-        name=rag_prompt["name"],
-        template_messages=rag_prompt["template_messages"],
-        settings=rag_prompt["settings"]
-    )
+#    prompt = literalai_client.api.get_or_create_prompt(
+#        name=rag_prompt["name"],
+#        template_messages=rag_prompt["template_messages"],
+#        settings=rag_prompt["settings"]
+#    )
+
+# Get current `production` version of a text prompt
+prompt = langfuse.get_prompt("RAG prompt")
+compiled_prompt = prompt.compile()
 
 @observe(as_type="generation")#as_type="generation"
 async def call_llm(question: str, chunks: List[Dict[str, Any]], stream: bool = False, messages = []):
     if messages is None:
-        messages = prompt.format_messages()
+        messages = [{'role': 'system', 'content':compiled_prompt}] #prompt.format_messages()
     
     context = "\n".join([f"{doc['page_content']}" for doc in chunks])
     messages.append({"role": "user", "content": f"Context: {context}\n\nQuestion: {question}\n\nAnswer:"})

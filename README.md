@@ -29,13 +29,19 @@ This repo shows how to evaluate a RAG:
     python embed.py
     ```
     
-5. Start a chat
+5. Add your prompt to Langfuse
+
+    ```shell
+    python addPromptToLangfuse.py
+    ```
+
+6. Start a chat
 
     ```shell
     chainlit run demo.py
     ```
 
-6. Create a dataset of questions and answers from your interactions
+7. Create a dataset of questions and answers from your interactions
     
     - Launch the API endpoint
     
@@ -49,7 +55,7 @@ This repo shows how to evaluate a RAG:
     python generator.py
     ```
     
-7. Eval: Create an eval dataset and run eval
+8. Eval: Create an eval dataset and run eval
 
     - Create the eval dataset in Langfuse
 
@@ -62,4 +68,4 @@ This repo shows how to evaluate a RAG:
       ```shell
       python run_eval.py --LF_DATASET_NAME="eval-dataset" --EXPERIMENT_NAME="exp V1" --SESSION_NAME="session 1" --TAG="tag-1"
       ```
-8. Inspect all Traces,Datasets, and Dataset Runs in the Langfuse Dashboard (at `https://cloud.langfuse.com/`)
+9. Inspect all Traces,Datasets, and Dataset Runs in the Langfuse Dashboard (at `https://cloud.langfuse.com/`)

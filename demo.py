@@ -6,10 +6,14 @@ from literalai import LiteralClient
 from langchain_chroma import Chroma
 from typing import List, Dict, Any
 import chainlit as cl
+from langfuse import Langfuse
 from langfuse.decorators import observe, langfuse_context
 
 from dotenv import load_dotenv
 load_dotenv()
+
+# Initialize Langfuse client
+langfuse = Langfuse()
 
 embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
 
@@ -20,19 +24,24 @@ vector_store = Chroma(
 
 cl.instrument_openai()
 
-literalai_client = LiteralClient(url=os.getenv("LITERAL_API_URL"), api_key=os.getenv("LITERAL_API_KEY"))
+#literalai_client = LiteralClient(url=os.getenv("LITERAL_API_URL"), api_key=os.getenv("LITERAL_API_KEY"))
 oai_client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-prompt_path = os.path.join(os.getcwd(), "prompt.json")
+#prompt_path = os.path.join(os.getcwd(), "prompt.json")
 
-with open(prompt_path, "r") as f:
-    rag_prompt = json.load(f)
+#with open(prompt_path, "r") as f:
+#    rag_prompt = json.load(f)
 
-    prompt = literalai_client.api.get_or_create_prompt(
-        name=rag_prompt["name"],
-        template_messages=rag_prompt["template_messages"],
-        settings=rag_prompt["settings"]
-    )
+#    prompt = literalai_client.api.get_or_create_prompt(
+#        name=rag_prompt["name"],
+#        template_messages=rag_prompt["template_messages"],
+#        settings=rag_prompt["settings"]
+#    )
+
+# Get current `production` version of a text prompt
+prompt = langfuse.get_prompt("RAG prompt")
+compiled_prompt = prompt.compile()
+
 
 
 #@observe(as_type="generation")
@@ -136,8 +145,10 @@ async def on_chat_start():
     await cl.Message(
         content="Hello, How can I help you?",
     ).send()
-    cl.user_session.set("settings", prompt.settings)
-    cl.user_session.set("messages", prompt.format_messages())
+    #cl.user_session.set("settings", prompt.settings)
+    #cl.user_session.set("messages", prompt.format_messages())
+    cl.user_session.set("settings", prompt.config)
+    cl.user_session.set("messages", [{'role': 'system', 'content':compiled_prompt}])
 
 @cl.on_message
 async def main(message: cl.Message):
@@ -149,3 +160,4 @@ async def main(message: cl.Message):
     cl.user_session.set("answer_message", answer_message)
     answer = await rag_agentChatBot(message.content)
     cl.user_session.set("messages", messages + [{"role": "assistant", "content": answer}])
+    
